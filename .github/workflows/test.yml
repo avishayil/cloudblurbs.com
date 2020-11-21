@@ -1,0 +1,30 @@
+name: Testing the GitHub Pages
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  jekyll:
+    runs-on: ubuntu-16.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.4
+        bundler-cache: true
+
+    - uses: borales/actions-yarn@v2.0.0
+      with:
+        cmd: install --modules-folder _assets/yarn --production
+
+    - name: build
+      run: bundle exec jekyll build
+
+    - name: test
+      run: |
+        sudo chown -R $USER:$USER /home/runner/work/cloudblurbs.com/cloudblurbs.com/
+        rm -R ./_assets/yarn
+        bundle exec htmlproofer ./_site --only-4xx --allow-hash-href --assume-extension --check-opengraph --disable-external --url-ignore "feed.xml"
