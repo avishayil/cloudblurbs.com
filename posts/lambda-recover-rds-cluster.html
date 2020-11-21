@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Cloud Blurbs | Using AWS Lambda To Auto Recover Unresponsive Multi-AZ RDS Cluster</title>
+  <meta name="description" content="Investigating RDS cluster inresponsivness can lead to a long downtime. Here is an automation that allows your site to stay up.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Using AWS Lambda To Auto Recover Unresponsive Multi-AZ RDS Cluster">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cloudblurbs.com/posts/lambda-recover-rds-cluster">
+  <meta property="og:description" content="Investigating RDS cluster inresponsivness can lead to a long downtime. Here is an automation that allows your site to stay up.">
+  <meta property="og:site_name" content="Cloud Blurbs">
+  
+  <link rel="canonical" href="https://medium.com/@avishayil/using-aws-lambda-to-auto-recover-unresponsive-multi-az-rds-cluster-dca09efed70a"/>
+  
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://cloudblurbs.com/posts/lambda-recover-rds-cluster">
+  <meta name="twitter:title" content="Using AWS Lambda To Auto Recover Unresponsive Multi-AZ RDS Cluster">
+  <meta name="twitter:description" content="Investigating RDS cluster inresponsivness can lead to a long downtime. Here is an automation that allows your site to stay up.">
+
+  
+    
+      <meta property="og:image" content="https://cloudblurbs.com/assets/aws-ce88c682e21cb19a683a2cd3d69d107be02b7f012234987debf76322b006b424.png">
+      <meta name="twitter:image" content="https://cloudblurbs.com/assets/aws-ce88c682e21cb19a683a2cd3d69d107be02b7f012234987debf76322b006b424.png">
+    
+  
+
+  <link href="https://cloudblurbs.com/feed.xml" type="application/rss+xml" rel="alternate" title="Cloud Blurbs Last 10 blog posts" />
+
+  
+    <link rel="stylesheet" type="text/css" href="/assets/fonts-85dab368d056b5d66418fbfd7e55a89f34f644ee811c8218c81017204426121b.css">
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-light-a98c41efc5ed9fcc06ac664c9e2f7a9b3c3b2e0a52357d221fe382f6f4abc8fc.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-light-87d1f2a3a19b1500e5c1626a0492025ca5f7f97d24540dc5900288e92112925a.png">
+      <link rel="stylesheet" type="text/css" href="/assets/light-082f8487859893265bdc3e1ea26da14818d7437bc53e2408f70124a48b5ba7dc.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav ">
+  <a href="/" class="header-logo" title="Cloud Blurbs">Cloud Blurbs</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-about">
+  <use href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about" xlink:href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://twitter.com/avishayil" rel="noreferrer noopener" target="_blank" title="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-twitter">
+  <use href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter" xlink:href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://www.facebook.com/avishayil" rel="noreferrer noopener" target="_blank" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-facebook">
+  <use href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook" xlink:href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@avishayil" rel="noreferrer noopener" target="_blank" title="Medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-medium">
+  <use href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium" xlink:href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/avishayil" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/avishaybar" rel="noreferrer noopener" target="_blank" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-linkedin">
+  <use href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin" xlink:href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:avishay.il@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+  <ul class="header-tags ">
+    
+    
+      
+        <li><a href="/tag/ansible">ansible</a></li>
+    
+      
+        <li><a href="/tag/aws">aws</a></li>
+    
+      
+        <li><a href="/tag/bitbucket">bitbucket</a></li>
+    
+      
+        <li><a href="/tag/blog">blog</a></li>
+    
+      
+        <li><a href="/tag/career">career</a></li>
+    
+      
+        <li><a href="/tag/cloudwatch">cloudwatch</a></li>
+    
+      
+        <li><a href="/tag/debug">debug</a></li>
+    
+      
+        <li><a href="/tag/dns">dns</a></li>
+    
+      
+        <li><a href="/tag/domain">domain</a></li>
+    
+      
+        <li><a href="/tag/elastic-beanstalk">elastic-beanstalk</a></li>
+    
+      
+        <li>...</li>
+        <li><a href="/tags">Show all</a></li>
+        
+  </ul>
+
+
+        <article class="article ">
+          <header class="article-header">
+            <h1>Using AWS Lambda To Auto Recover Unresponsive Multi-AZ RDS Cluster</h1>
+            <p>Investigating RDS cluster inresponsivness can lead to a long downtime. Here is an automation that allows your site to stay up.</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    December 13, 2017
+  </span>
+  <span class="article-list-divider">-</span>
+  <span class="article-list-minutes">
+    
+    
+      4 minute read
+    
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      <a href="/tag/lambda" title="See all posts with tag 'lambda'" data-proofer-ignore>lambda</a>
+    
+      <a href="/tag/aws" title="See all posts with tag 'aws'" data-proofer-ignore>aws</a>
+    
+      <a href="/tag/rds" title="See all posts with tag 'rds'" data-proofer-ignore>rds</a>
+    
+      <a href="/tag/sns" title="See all posts with tag 'sns'" data-proofer-ignore>sns</a>
+    
+      <a href="/tag/cloudwatch" title="See all posts with tag 'cloudwatch'" data-proofer-ignore>cloudwatch</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/aws-ce88c682e21cb19a683a2cd3d69d107be02b7f012234987debf76322b006b424.png">
+  <img src="/assets/aws-ce88c682e21cb19a683a2cd3d69d107be02b7f012234987debf76322b006b424.png" alt="Amazon Web Services" class="zooming" data-rjs="/assets/aws-ce88c682e21cb19a683a2cd3d69d107be02b7f012234987debf76322b006b424.png" data-zooming-width="517" data-zooming-height="314" />
+</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>One of the obstacles I encountered during moving our whole server setup from Hosting services to AWS, is the Multi Availability Zones setup and the fact that it wasn’t redundant to other events, rather than shutdowns / unexpected falls.</p>
+
+<p>When trying to save some $$ for my company, I decided to use multi-az t2.medium RDS cluster. This setup gave me, except for the redundancy and quick recovery during Layer-7 attacks, the ability to promote the replica database to master when I was running out of CPU credits for the instance I was using. This happened usually once a day, depends on the traffic our website experienced, and the “solution” was to manually login to the RDS console and trigger a failover.</p>
+
+<p>This worked well for a few days, until I figured out that there is no out-of-the-box, automated solution to trigger this failover when the instance experienced high select latencies (starting from &gt;10ms) and makes our website not responsive for some of our readers. Also, our Elastic Beanstalk application went to warning state, stating that around 5% of the users are receiving 5xx errors trying to access the web application.</p>
+
+<p>I’ll try to explain here what I did to achieve the situation, and you can take this example and customize it for your own needs. Of course, there are some improvements that can be made, but because reasons of time and other requirements some of the code could be written better.</p>
+
+<h2 id="tackling-the-problem">Tackling the Problem</h2>
+
+<p>This walkthrough involves the following AWS services:</p>
+<ol>
+  <li><strong>RDS</strong> — Relational Database Service</li>
+  <li><strong>CloudWatch</strong> — Cloud &amp; Network Monitoring Services</li>
+  <li><strong>SNS</strong> — Simple Notification Service</li>
+  <li><strong>Lambda</strong> — Serverless Computing Platform</li>
+</ol>
+
+<p>The idea is to create a Lambda function, that will be triggered by SNS when a CloudWatch Alarm is going to ALARM state, then it will use the function to connect to the RDS database, discover what instance is acting as the reader replica, and promote it to writer. Sounds complicated? in fact it doesn’t.</p>
+
+<p>Here are the instruction to configure each AWS service:</p>
+
+<h3 id="rds">RDS</h3>
+
+<p>Make sure that your’e using a multi az RDS Cluster
+You have to make sure that your RDS instance is a Cluster. How can you tell that? just head to the RDS console and select ‘Clusters’ on the side menu. You should see your RDS cluster there. When you’ll click on the cluster you’ll notice the DB Cluster and Cluster Endpoint parameters, please write both of them down, and make sure you remember your username and password, to access the cluster.</p>
+
+<p><a href="/assets/rds-cluster-727e879e7efebc57a8be67f5d9de650cdbf0ea72fca692b8c7c76886d23c35b0.png">
+  <img src="/assets/rds-cluster-727e879e7efebc57a8be67f5d9de650cdbf0ea72fca692b8c7c76886d23c35b0.png" alt="RDS Cluster" class="zooming" data-rjs="/assets/rds-cluster-727e879e7efebc57a8be67f5d9de650cdbf0ea72fca692b8c7c76886d23c35b0.png" data-zooming-width="519" data-zooming-height="313" />
+</a></p>
+
+<h3 id="cloudwatch">CloudWatch</h3>
+
+<p>Your’e going to set a new Alarm — for my use case it was select latency. You’ll need to access the CloudWatch Management Console, choose ‘Create Alarm’ then select the appropriate metric — in our case that would be ‘SelectLatency’ under ‘RDS &gt; DBClusterIdentifier’ metrics category. You’ll need to create 2 alarms — one for each database, the master and the replica in order to make sure they switch.</p>
+
+<p><a href="/assets/cloudwatch-create-alarm-7aabfd1fd0c8d62ee5f3b8955224708033c948fbfb9d61c7c6dfbcfbf1f9e740.png">
+  <img src="/assets/cloudwatch-create-alarm-7aabfd1fd0c8d62ee5f3b8955224708033c948fbfb9d61c7c6dfbcfbf1f9e740.png" alt="Create CloudWatch Alarm" class="zooming" data-rjs="/assets/cloudwatch-create-alarm-7aabfd1fd0c8d62ee5f3b8955224708033c948fbfb9d61c7c6dfbcfbf1f9e740.png" data-zooming-width="946" data-zooming-height="753" />
+</a></p>
+
+<p><a href="/assets/cloudwatch-define-alarm-9bc64b00182ede493684f5644f6073c707d42a054c71460653ccbfb79621dce7.png">
+  <img src="/assets/cloudwatch-define-alarm-9bc64b00182ede493684f5644f6073c707d42a054c71460653ccbfb79621dce7.png" alt="Define CloudWatch Alarm" class="zooming" data-rjs="/assets/cloudwatch-define-alarm-9bc64b00182ede493684f5644f6073c707d42a054c71460653ccbfb79621dce7.png" data-zooming-width="945" data-zooming-height="751" />
+</a></p>
+
+<h3 id="sns">SNS</h3>
+
+<p>You’ll need to create a new topic and a new subscription, in order to subscribe to the Alarm and trigger the Lambda function, as well as receiving an email notification every time the alarm is changing it’s state to ALARM.</p>
+
+<p><a href="/assets/sns-377be904d5d0f47a740d8620055a7a906a7444529e908975b3a08e4cabbbfe5f.png">
+  <img src="/assets/sns-377be904d5d0f47a740d8620055a7a906a7444529e908975b3a08e4cabbbfe5f.png" alt="SNS Topic" class="zooming" data-rjs="/assets/sns-377be904d5d0f47a740d8620055a7a906a7444529e908975b3a08e4cabbbfe5f.png" data-zooming-width="1175" data-zooming-height="512" />
+</a></p>
+
+<h3 id="lambda">Lambda</h3>
+
+<p>You’re going to create a new lambda function that utilizes the RDS object of the AWS SDK library for Node.js. The function will create a connection to the mysql cluster, see which database is promoted to writer, then use the failover function to switch between the writer and reader. Because the code requires an external library to run (mysql) you’ll need to run npm install mysql on a local project, then upload the whole function folder as a zip file to Lambda.</p>
+
+<script src="https://gist.github.com/avishayil/27f16de2fdb773c95940bb938109dff4.js"></script>
+
+<p>On the function triggers, you’ll be able to choose the SNS you defined earlier:</p>
+
+<p><a href="/assets/lambda-triggers-db1562840298844d1c6facbbd1595ccc742e4dbb256fe1cb4b7cd577b6511f38.png">
+  <img src="/assets/lambda-triggers-db1562840298844d1c6facbbd1595ccc742e4dbb256fe1cb4b7cd577b6511f38.png" alt="Lambda Triggers" class="zooming" data-rjs="/assets/lambda-triggers-db1562840298844d1c6facbbd1595ccc742e4dbb256fe1cb4b7cd577b6511f38.png" data-zooming-width="987" data-zooming-height="314" />
+</a></p>
+
+<p>You could also set up CloudWatch to run the function only when you are asleep, and even receive notifications to your phone and do it manually during working hours, so this setup would execute only at night time.</p>
+
+<p>After you finished the set up, you should just sit, and see how the function performs. We use this in production, and the result is great: if one database falls because of an attack or any other reason, the downtime minimizes to minimum and the database recovers automatically.</p>
+
+<p>Avishay.</p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Using+AWS+Lambda+To+Auto+Recover+Unresponsive+Multi-AZ+RDS+Cluster%20-%20https://cloudblurbs.com/posts/lambda-recover-rds-cluster%20by%20@avishayil" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://cloudblurbs.com/posts/lambda-recover-rds-cluster" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script src="https://avishayil-blog.disqus.com/embed.js" async defer></script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+          
+        </article>
+        <footer class="footer ">
+  <p>
+    Cloud Blurbs. © All rights reserved to <a href="/about" title="About me">Avishay Bar</a> |  
+    Built with <a href="http://chalk.nielsenramon.com" title="Chalk">Chalk</a>, a <a href="https://jekyllrb.com" title="Jekyll">Jekyll</a> blog template.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63733853-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-63733853-3');
+  </script>
+
+
+<script src="/assets/vendor-130c9c254effc51f3283620bc635851da7b99c20901216948f11ba72ee13317f.js" type="text/javascript"></script>
+
+
+
+
+
+<script src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js" type="text/javascript"></script>
+
+
+</body>
+</html>

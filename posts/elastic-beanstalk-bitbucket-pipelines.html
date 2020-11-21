@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Cloud Blurbs | Deploy Elastic Beanstalk Application using Bitbucket Pipelines</title>
+  <meta name="description" content="You have an Elastic Beanstalk applications and your'e using bitbucket for source control? here's your way to automate your deployment pipeline">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Deploy Elastic Beanstalk Application using Bitbucket Pipelines">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines">
+  <meta property="og:description" content="You have an Elastic Beanstalk applications and your'e using bitbucket for source control? here's your way to automate your deployment pipeline">
+  <meta property="og:site_name" content="Cloud Blurbs">
+  
+  <link rel="canonical" href="https://medium.com/@avishayil/deploy-to-elastic-beanstalk-using-bitbucket-pipelines-189eb75cf052"/>
+  
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines">
+  <meta name="twitter:title" content="Deploy Elastic Beanstalk Application using Bitbucket Pipelines">
+  <meta name="twitter:description" content="You have an Elastic Beanstalk applications and your'e using bitbucket for source control? here's your way to automate your deployment pipeline">
+
+  
+    
+      <meta property="og:image" content="https://cloudblurbs.com/assets/bitbucket-pipelines-header-3f2024961ebc76e5f43ce70a4a8ad6de56117c91a6aaa42a9621bafee7fdf823.jpg">
+      <meta name="twitter:image" content="https://cloudblurbs.com/assets/bitbucket-pipelines-header-3f2024961ebc76e5f43ce70a4a8ad6de56117c91a6aaa42a9621bafee7fdf823.jpg">
+    
+  
+
+  <link href="https://cloudblurbs.com/feed.xml" type="application/rss+xml" rel="alternate" title="Cloud Blurbs Last 10 blog posts" />
+
+  
+    <link rel="stylesheet" type="text/css" href="/assets/fonts-85dab368d056b5d66418fbfd7e55a89f34f644ee811c8218c81017204426121b.css">
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-light-a98c41efc5ed9fcc06ac664c9e2f7a9b3c3b2e0a52357d221fe382f6f4abc8fc.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-light-87d1f2a3a19b1500e5c1626a0492025ca5f7f97d24540dc5900288e92112925a.png">
+      <link rel="stylesheet" type="text/css" href="/assets/light-082f8487859893265bdc3e1ea26da14818d7437bc53e2408f70124a48b5ba7dc.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav ">
+  <a href="/" class="header-logo" title="Cloud Blurbs">Cloud Blurbs</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-about">
+  <use href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about" xlink:href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://twitter.com/avishayil" rel="noreferrer noopener" target="_blank" title="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-twitter">
+  <use href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter" xlink:href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://www.facebook.com/avishayil" rel="noreferrer noopener" target="_blank" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-facebook">
+  <use href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook" xlink:href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@avishayil" rel="noreferrer noopener" target="_blank" title="Medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-medium">
+  <use href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium" xlink:href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/avishayil" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/avishaybar" rel="noreferrer noopener" target="_blank" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-linkedin">
+  <use href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin" xlink:href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:avishay.il@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+  <ul class="header-tags ">
+    
+    
+      
+        <li><a href="/tag/ansible">ansible</a></li>
+    
+      
+        <li><a href="/tag/aws">aws</a></li>
+    
+      
+        <li><a href="/tag/bitbucket">bitbucket</a></li>
+    
+      
+        <li><a href="/tag/blog">blog</a></li>
+    
+      
+        <li><a href="/tag/career">career</a></li>
+    
+      
+        <li><a href="/tag/cloudwatch">cloudwatch</a></li>
+    
+      
+        <li><a href="/tag/debug">debug</a></li>
+    
+      
+        <li><a href="/tag/dns">dns</a></li>
+    
+      
+        <li><a href="/tag/domain">domain</a></li>
+    
+      
+        <li><a href="/tag/elastic-beanstalk">elastic-beanstalk</a></li>
+    
+      
+        <li>...</li>
+        <li><a href="/tags">Show all</a></li>
+        
+  </ul>
+
+
+        <article class="article ">
+          <header class="article-header">
+            <h1>Deploy Elastic Beanstalk Application using Bitbucket Pipelines</h1>
+            <p>You have an Elastic Beanstalk applications and your'e using bitbucket for source control? here's your way to automate your deployment pipeline</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    January 17, 2018
+  </span>
+  <span class="article-list-divider">-</span>
+  <span class="article-list-minutes">
+    
+    
+      5 minute read
+    
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      <a href="/tag/bitbucket" title="See all posts with tag 'bitbucket'" data-proofer-ignore>bitbucket</a>
+    
+      <a href="/tag/elastic-beanstalk" title="See all posts with tag 'elastic-beanstalk'" data-proofer-ignore>elastic-beanstalk</a>
+    
+      <a href="/tag/pipelines" title="See all posts with tag 'pipelines'" data-proofer-ignore>pipelines</a>
+    
+      <a href="/tag/aws" title="See all posts with tag 'aws'" data-proofer-ignore>aws</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/bitbucket-pipelines-header-3f2024961ebc76e5f43ce70a4a8ad6de56117c91a6aaa42a9621bafee7fdf823.jpg">
+  <img src="/assets/bitbucket-pipelines-header-3f2024961ebc76e5f43ce70a4a8ad6de56117c91a6aaa42a9621bafee7fdf823.jpg" alt="React Native" class="zooming" data-rjs="/assets/bitbucket-pipelines-header-3f2024961ebc76e5f43ce70a4a8ad6de56117c91a6aaa42a9621bafee7fdf823.jpg" data-zooming-width="638" data-zooming-height="359" />
+</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>For a long period of time, I was using custom git hooks on my own ec2 instance that ran Gogs open source software as a git server. I was using these hooks to make sure that every push to the repository goes through and being deployed to our staging server.</p>
+
+<p>Recently, I started to implement Atlassian products for our work platform. We’re using Confluence for shared work, Jira for agile deployment and customer service, and Bitbucket for source code management. I was looking for solutions to offload my old git server that was taking an ec2 machine. Other advantages were the tight integration that Jira has to offer with Bitbucket, closing issues with commits, etc.</p>
+
+<p>Bitbucket had announced not-long-ago Pipelines as their new product. Basically, you can use custom yaml files to describe what happens after you push code to your repository. Bitbucket will lift some instance and allocate computing power for you, for running the code you describe in the yaml, and you’re paying for the time it takes to run. You can also use some caching techniques to make sure you don’t download large libraries over and over again.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<h3 id="creating-iam-role-to-enable-secure-access-to-your-aws-resources">Creating IAM Role to enable secure access to your AWS resources</h3>
+
+<p>First of all, we’ll need to create the credentials that would be used to access your S3 and Elastic Beanstalk resources on AWS. In order to do that, we’ll need to create a new user account (let’s say, bitbucket) on your AWS account and provide it the following access:</p>
+
+<ul>
+  <li><strong>S3</strong>: ListBucket, GetBucketLocation, GetObject and PutObject to the specific S3 resource.</li>
+  <li><strong>Elastic Beanstalk</strong>: Create application version, and update environment with the appropriate application version. Make sure you select the specific environment you want to update (in this case, staging).</li>
+  <li><strong>Other Services</strong>: Not sure how to explain each and every service, but after ping-pong with AWS support and hard work trying all configurations that was the most preferable.</li>
+</ul>
+
+<p>The JSON looks as follows:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"Version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2012-10-17"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Statement"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"VisualEditor0"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"Effect"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Allow"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"Action"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"s3:Get*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:CreateBucket"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:Unsubscribe"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:CreateApplicationVersion"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:CreateChangeSet"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"autoscaling:*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:List*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudwatch:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:OptInPhoneNumber"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:CheckIfPhoneNumberIsOptedOut"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:ContinueUpdateRollback"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:GetObjectAcl"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListEndpointsByPlatformApplication"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:SetEndpointAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"rds:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:DescribeEnvironments"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:DeletePlatformApplication"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:SetPlatformApplicationAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:Estimate*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:UpdateStack"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticloadbalancing:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:Subscribe"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ConfirmSubscription"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:DeleteObject"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:List*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticloadbalancing:RegisterInstancesWithLoadBalancer"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:ExecuteChangeSet"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListSubscriptionsByTopic"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:CreateTopic"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:GetPlatformApplicationAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:SignalResource"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:DeleteApplicationVersion"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:CreateStorageLocation"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:GetSubscriptionAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:DeleteEndpoint"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:PutObject"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:GetObject"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListPhoneNumbersOptedOut"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:GetEndpointAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:DeleteStack"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:List*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:UpdateEnvironment"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:GetSMSAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:CreateUploadBucket"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:Check*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:CancelUpdateStack"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:DeleteTopic"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListTopics"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:CreatePlatformEndpoint"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:UpdateTerminationProtection"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:ListBucket"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:SetTopicAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:GetBucketPolicy"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:DeleteChangeSet"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:RequestEnvironmentInfo"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:Publish"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudwatch:Get*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:PutObjectAcl"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:GetTopicAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:CreatePlatformApplication"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:SetSMSAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudwatch:List*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListSubscriptions"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:PreviewStackUpdate"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"ec2:Describe*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:SetSubscriptionAttributes"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:Validate*"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:CreateStack"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:PutBucketPolicy"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"elasticbeanstalk:RetrieveEnvironmentInfo"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"s3:GetBucketLocation"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"sns:ListPlatformApplications"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"cloudformation:Get*"</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"Resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><a href="/assets/bitbucket-pipelines-policy-492dfdd8dec83b0266c451579a4c17a41b59dc9470384d73657fda64e7e9845e.png">
+  <img src="/assets/bitbucket-pipelines-policy-492dfdd8dec83b0266c451579a4c17a41b59dc9470384d73657fda64e7e9845e.png" alt="Bitbucket Pipelines Policy" class="zooming" data-rjs="/assets/bitbucket-pipelines-policy-492dfdd8dec83b0266c451579a4c17a41b59dc9470384d73657fda64e7e9845e.png" data-zooming-width="850" data-zooming-height="358" />
+</a></p>
+
+<p>After you’re done, keep the Access Key ID and Secret Access Key, you’re going to use them later.</p>
+
+<h3 id="enabling-pipelines-in-the-bitbucket-repository">Enabling pipelines in the Bitbucket repository</h3>
+
+<p>Before dive in to the details, we need to enable Pipelines in our repository and define some environment variable to work with. We’ll go to Pipelines on the left menu, than choose Python and Enable button to get started.</p>
+
+<p><a href="/assets/bitbucket-pipelines-3e23d764ba3d5a5608f7e7a24a33e9342df5d2061fbcdea62f180782dad5f209.png">
+  <img src="/assets/bitbucket-pipelines-3e23d764ba3d5a5608f7e7a24a33e9342df5d2061fbcdea62f180782dad5f209.png" alt="Bitbucket Pipelines" class="zooming" data-rjs="/assets/bitbucket-pipelines-3e23d764ba3d5a5608f7e7a24a33e9342df5d2061fbcdea62f180782dad5f209.png" data-zooming-width="1239" data-zooming-height="760" />
+</a></p>
+
+<p><a href="/assets/bitbucket-pipelines-language-8f155536c8494f57c5daca22c4639aec8d3c52aa1bbf7deaa2bd1d993d3601fe.png">
+  <img src="/assets/bitbucket-pipelines-language-8f155536c8494f57c5daca22c4639aec8d3c52aa1bbf7deaa2bd1d993d3601fe.png" alt="Bitbucket Pipelines Language" class="zooming" data-rjs="/assets/bitbucket-pipelines-language-8f155536c8494f57c5daca22c4639aec8d3c52aa1bbf7deaa2bd1d993d3601fe.png" data-zooming-width="846" data-zooming-height="360" />
+</a></p>
+
+<p>We’ll see an empty build going on. After you’re done, you’ll notice that the application created a new S3 bucket for your use, usually named around elasticbeanstalk-eu-central-1-account-id. Take a note of this name.</p>
+
+<p>Now, we need to set the necessary environment variables for the script to work properly. We’re going to use the Access Key ID and Secret Access Key we noted earlier, and the S3 Bucket name we got from the first pipelines automatic build:</p>
+
+<p><a href="/assets/bitbucket-pipelines-environment-variables-3d90561f2d40b76f46984076ee7c5904f5de7fc43b51c75c151875870493ff05.png">
+  <img src="/assets/bitbucket-pipelines-environment-variables-3d90561f2d40b76f46984076ee7c5904f5de7fc43b51c75c151875870493ff05.png" alt="Bitbucket Pipelines Environment Variables" class="zooming" data-rjs="/assets/bitbucket-pipelines-environment-variables-3d90561f2d40b76f46984076ee7c5904f5de7fc43b51c75c151875870493ff05.png" data-zooming-width="1082" data-zooming-height="660" />
+</a></p>
+
+<p>Next, we’ll fetch the changes from the git repository and edit the needed files.</p>
+
+<p>Basically, we’re talking about two main files you’ll need to place on the root folder of the application, courtesy of awslabs. The first one is the famous <code class="highlighter-rouge">bitbucket-pipelines.yml</code>. That Bitbucket Pipelines created for us. We need to alter it a little bit to the following example:</p>
+
+<p><a href="https://bitbucket.org/awslabs/aws-elastic-beanstalk-bitbucket-pipelines-python/src/e646d081c485c57801feeda9a16b2de2134668eb/bitbucket-pipelines.yml">bitbucket-pipelines.yml</a></p>
+
+<p>Let’s talk about this file a little bit, since the other file will not change in most cases.</p>
+
+<ul>
+  <li>The first 3 lines are self explanatory. Perform update on the running instance to make sure we can zip the application, than install the zip library.</li>
+  <li>After that, we use python package manager, pip to install the boto3 library, which includes the necessary commands connecting to the aws sdk.</li>
+  <li>After that, We’ll zip the application and then run the second file, beanstalk_deploy.py which contains three functions:
+    <ol>
+      <li><code class="highlighter-rouge">upload_to_s3</code> — which is responsible for uploading the zipped application to Amazon S3 storage. The function uses the environment variable <code class="highlighter-rouge">S3_BUCKET</code> we defined before and uploading the package to this bucket. The name will be the application name from Elastic Beanstalk, with a timestamp and the suffix <code class="highlighter-rouge">bitbucket_builds.zip</code>.</li>
+      <li><code class="highlighter-rouge">create_new_version</code> — responsible for creating a new application version in Elastic Beanstalk.</li>
+      <li><code class="highlighter-rouge">deploy_new_version</code> — Takes the zipped package we uploaded to S3 before, than deploys it to the new application version we created in the <code class="highlighter-rouge">create_new_version</code> function.</li>
+    </ol>
+  </li>
+</ul>
+
+<p><a href="https://bitbucket.org/awslabs/aws-elastic-beanstalk-bitbucket-pipelines-python/src/e646d081c485c57801feeda9a16b2de2134668eb/beanstalk_deploy.py">beanstalk-deploy.py</a></p>
+
+<p>You’re more than welcome to change the <code class="highlighter-rouge">bitbucket-pipelines.yml</code> file and suit it for your needs. After you’re done, just commit, push, and see your buildscript in action.</p>
+
+<p>Avishay.</p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Deploy+Elastic+Beanstalk+Application+using+Bitbucket+Pipelines%20-%20https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines%20by%20@avishayil" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script src="https://avishayil-blog.disqus.com/embed.js" async defer></script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+          
+        </article>
+        <footer class="footer ">
+  <p>
+    Cloud Blurbs. © All rights reserved to <a href="/about" title="About me">Avishay Bar</a> |  
+    Built with <a href="http://chalk.nielsenramon.com" title="Chalk">Chalk</a>, a <a href="https://jekyllrb.com" title="Jekyll">Jekyll</a> blog template.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63733853-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-63733853-3');
+  </script>
+
+
+<script src="/assets/vendor-130c9c254effc51f3283620bc635851da7b99c20901216948f11ba72ee13317f.js" type="text/javascript"></script>
+
+
+
+
+
+<script src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js" type="text/javascript"></script>
+
+
+</body>
+</html>

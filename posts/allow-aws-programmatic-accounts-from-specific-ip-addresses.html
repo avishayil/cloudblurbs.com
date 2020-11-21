@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Cloud Blurbs | Pro Tip: Allow Access to AWS Programmatic Accounts from Specific IP Addresses</title>
+  <meta name="description" content="Programmatic accounts are a bad idea in general, but at least AWS provides us a way to secure the access to them">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Pro Tip: Allow Access to AWS Programmatic Accounts from Specific IP Addresses">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses">
+  <meta property="og:description" content="Programmatic accounts are a bad idea in general, but at least AWS provides us a way to secure the access to them">
+  <meta property="og:site_name" content="Cloud Blurbs">
+  
+  <link rel="canonical" href="https://medium.com/@avishayil/pro-tip-allow-access-to-aws-programmatic-accounts-from-specific-ip-addresses-59056a36dc0"/>
+  
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses">
+  <meta name="twitter:title" content="Pro Tip: Allow Access to AWS Programmatic Accounts from Specific IP Addresses">
+  <meta name="twitter:description" content="Programmatic accounts are a bad idea in general, but at least AWS provides us a way to secure the access to them">
+
+  
+    
+      <meta property="og:image" content="https://cloudblurbs.com/assets/aws-iam-d3d8901ed7fb7c1ea75119907d6c662753fe19e515f56e536aca765d71728d62.png">
+      <meta name="twitter:image" content="https://cloudblurbs.com/assets/aws-iam-d3d8901ed7fb7c1ea75119907d6c662753fe19e515f56e536aca765d71728d62.png">
+    
+  
+
+  <link href="https://cloudblurbs.com/feed.xml" type="application/rss+xml" rel="alternate" title="Cloud Blurbs Last 10 blog posts" />
+
+  
+    <link rel="stylesheet" type="text/css" href="/assets/fonts-85dab368d056b5d66418fbfd7e55a89f34f644ee811c8218c81017204426121b.css">
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-light-a98c41efc5ed9fcc06ac664c9e2f7a9b3c3b2e0a52357d221fe382f6f4abc8fc.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-light-87d1f2a3a19b1500e5c1626a0492025ca5f7f97d24540dc5900288e92112925a.png">
+      <link rel="stylesheet" type="text/css" href="/assets/light-082f8487859893265bdc3e1ea26da14818d7437bc53e2408f70124a48b5ba7dc.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav ">
+  <a href="/" class="header-logo" title="Cloud Blurbs">Cloud Blurbs</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-about">
+  <use href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about" xlink:href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://twitter.com/avishayil" rel="noreferrer noopener" target="_blank" title="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-twitter">
+  <use href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter" xlink:href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://www.facebook.com/avishayil" rel="noreferrer noopener" target="_blank" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-facebook">
+  <use href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook" xlink:href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@avishayil" rel="noreferrer noopener" target="_blank" title="Medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-medium">
+  <use href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium" xlink:href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/avishayil" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/avishaybar" rel="noreferrer noopener" target="_blank" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-linkedin">
+  <use href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin" xlink:href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:avishay.il@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+  <ul class="header-tags ">
+    
+    
+      
+        <li><a href="/tag/ansible">ansible</a></li>
+    
+      
+        <li><a href="/tag/aws">aws</a></li>
+    
+      
+        <li><a href="/tag/bitbucket">bitbucket</a></li>
+    
+      
+        <li><a href="/tag/blog">blog</a></li>
+    
+      
+        <li><a href="/tag/career">career</a></li>
+    
+      
+        <li><a href="/tag/cloudwatch">cloudwatch</a></li>
+    
+      
+        <li><a href="/tag/debug">debug</a></li>
+    
+      
+        <li><a href="/tag/dns">dns</a></li>
+    
+      
+        <li><a href="/tag/domain">domain</a></li>
+    
+      
+        <li><a href="/tag/elastic-beanstalk">elastic-beanstalk</a></li>
+    
+      
+        <li>...</li>
+        <li><a href="/tags">Show all</a></li>
+        
+  </ul>
+
+
+        <article class="article ">
+          <header class="article-header">
+            <h1>Pro Tip: Allow Access to AWS Programmatic Accounts from Specific IP Addresses</h1>
+            <p>Programmatic accounts are a bad idea in general, but at least AWS provides us a way to secure the access to them</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    September 21, 2019
+  </span>
+  <span class="article-list-divider">-</span>
+  <span class="article-list-minutes">
+    
+    
+      2 minute read
+    
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      <a href="/tag/aws" title="See all posts with tag 'aws'" data-proofer-ignore>aws</a>
+    
+      <a href="/tag/iam" title="See all posts with tag 'iam'" data-proofer-ignore>iam</a>
+    
+      <a href="/tag/security" title="See all posts with tag 'security'" data-proofer-ignore>security</a>
+    
+      <a href="/tag/programmatic" title="See all posts with tag 'programmatic'" data-proofer-ignore>programmatic</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/aws-iam-d3d8901ed7fb7c1ea75119907d6c662753fe19e515f56e536aca765d71728d62.png">
+  <img src="/assets/aws-iam-d3d8901ed7fb7c1ea75119907d6c662753fe19e515f56e536aca765d71728d62.png" alt="AWS IAM" class="zooming" data-rjs="/assets/aws-iam-d3d8901ed7fb7c1ea75119907d6c662753fe19e515f56e536aca765d71728d62.png" data-zooming-width="1102" data-zooming-height="620" />
+</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>IAM policies are a great way to enforce authorization for Groups / Users / Roles to specific services, under specific conditions. In high level, policies are a set of JSON statements which provide certain permissions to entities. Adding another security layer to that, there is an optional block under the policy statements. Like any condition in any programming languages, The condition block returns a boolean output — either true or false, which decides whether a policy grants or denies the request.</p>
+
+<p>In this example, we will demonstrate how a policy can deny or allow access from specific IP address, and how combining it with programmatic users (service accounts) adds more security to it in case of credentials theft.</p>
+
+<p>For our use case, let’s think about the following scenario: An established enterprise company uses a Jenkins to deploy AWS resources on their Development, Staging and Production workloads. As part of the automated continues integration process, Jenkins uses AWS credentials to programmatically call the AWS API to perform its actions.
+Now, let’s think what is going to happen if someone performs MITM attack and getting those credentials, or an irresponsible user saves those credentials to GitHub and a bot finds them? A lot of bad things might happen on these cases.</p>
+
+<p>How are we mitigating these kind of attacks? In most cases, Jenkins will run from an organizational network, where the IP address(es) are known upfront. Simply be creating an IAM policy that rejects access if the request is coming from IP address that is not explicitly mentioned in the policy, we can mitigate any incident of stolen credentials.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>Create a new IAM policy and name it AWSAllowAccessFromIP. The policy will look as following (Update the IP address placeholder):</p>
+
+<script src="https://gist.github.com/avishayil/c5312f987bd2d7f118e50bed4fcc0391.js"></script>
+
+<p>Now, let’s attach this policy to our programmatic user (service account). This policy will automatically ensure that any request not originates from the mentioned IP address will be denied.
+In our example, we’re running the AWS Security audit tool prowler. On the first run without applying the policy, these are the results:</p>
+
+<p><a href="/assets/iam-allowed-adbb3cc93fb1508375220e375198c5be47e3ba22355e5e85dfff154dc14a55f0.png">
+  <img src="/assets/iam-allowed-adbb3cc93fb1508375220e375198c5be47e3ba22355e5e85dfff154dc14a55f0.png" alt="IAM Allowed" class="zooming" data-rjs="/assets/iam-allowed-adbb3cc93fb1508375220e375198c5be47e3ba22355e5e85dfff154dc14a55f0.png" data-zooming-width="808" data-zooming-height="783" />
+</a></p>
+
+<p>Now, after applying the policy, the AWS API won’t let us to access those actions since the request doesn’t originate from the explicitly mentioned IP address:</p>
+
+<p><a href="/assets/iam-denied-1dbeb9dcdc0e3990cd63b60a920fc3b82a1b85ce9a690ddc004fbc10b8410d97.png">
+  <img src="/assets/iam-denied-1dbeb9dcdc0e3990cd63b60a920fc3b82a1b85ce9a690ddc004fbc10b8410d97.png" alt="IAM Denied" class="zooming" data-rjs="/assets/iam-denied-1dbeb9dcdc0e3990cd63b60a920fc3b82a1b85ce9a690ddc004fbc10b8410d97.png" data-zooming-width="808" data-zooming-height="783" />
+</a></p>
+
+<p>I encourage you to keep you AWS environments secure, by using the controls AWS provides.</p>
+
+<p>Avishay.</p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Pro+Tip:+Allow+Access+to+AWS+Programmatic+Accounts+from+Specific+IP+Addresses%20-%20https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses%20by%20@avishayil" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script src="https://avishayil-blog.disqus.com/embed.js" async defer></script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+          
+        </article>
+        <footer class="footer ">
+  <p>
+    Cloud Blurbs. © All rights reserved to <a href="/about" title="About me">Avishay Bar</a> |  
+    Built with <a href="http://chalk.nielsenramon.com" title="Chalk">Chalk</a>, a <a href="https://jekyllrb.com" title="Jekyll">Jekyll</a> blog template.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63733853-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-63733853-3');
+  </script>
+
+
+<script src="/assets/vendor-130c9c254effc51f3283620bc635851da7b99c20901216948f11ba72ee13317f.js" type="text/javascript"></script>
+
+
+
+
+
+<script src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js" type="text/javascript"></script>
+
+
+</body>
+</html>

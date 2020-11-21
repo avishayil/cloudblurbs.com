@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Cloud Blurbs | Testing Ansible Roles on Windows Hosts Using Test-Kitchen and AWS</title>
+  <meta name="description" content="Writing Ansible roles for Windows? here's a suggested architecture for integration tests">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Testing Ansible Roles on Windows Hosts Using Test-Kitchen and AWS">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws">
+  <meta property="og:description" content="Writing Ansible roles for Windows? here's a suggested architecture for integration tests">
+  <meta property="og:site_name" content="Cloud Blurbs">
+  
+  <link rel="canonical" href="https://medium.com/@avishayil/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws-b6aa69e8b29"/>
+  
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws">
+  <meta name="twitter:title" content="Testing Ansible Roles on Windows Hosts Using Test-Kitchen and AWS">
+  <meta name="twitter:description" content="Writing Ansible roles for Windows? here's a suggested architecture for integration tests">
+
+  
+    
+      <meta property="og:image" content="https://cloudblurbs.com/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png">
+      <meta name="twitter:image" content="https://cloudblurbs.com/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png">
+    
+  
+
+  <link href="https://cloudblurbs.com/feed.xml" type="application/rss+xml" rel="alternate" title="Cloud Blurbs Last 10 blog posts" />
+
+  
+    <link rel="stylesheet" type="text/css" href="/assets/fonts-85dab368d056b5d66418fbfd7e55a89f34f644ee811c8218c81017204426121b.css">
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-light-a98c41efc5ed9fcc06ac664c9e2f7a9b3c3b2e0a52357d221fe382f6f4abc8fc.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-light-87d1f2a3a19b1500e5c1626a0492025ca5f7f97d24540dc5900288e92112925a.png">
+      <link rel="stylesheet" type="text/css" href="/assets/light-082f8487859893265bdc3e1ea26da14818d7437bc53e2408f70124a48b5ba7dc.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav ">
+  <a href="/" class="header-logo" title="Cloud Blurbs">Cloud Blurbs</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-about">
+  <use href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about" xlink:href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://twitter.com/avishayil" rel="noreferrer noopener" target="_blank" title="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-twitter">
+  <use href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter" xlink:href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://www.facebook.com/avishayil" rel="noreferrer noopener" target="_blank" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-facebook">
+  <use href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook" xlink:href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@avishayil" rel="noreferrer noopener" target="_blank" title="Medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-medium">
+  <use href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium" xlink:href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/avishayil" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/avishaybar" rel="noreferrer noopener" target="_blank" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-linkedin">
+  <use href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin" xlink:href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:avishay.il@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+  <ul class="header-tags ">
+    
+    
+      
+        <li><a href="/tag/ansible">ansible</a></li>
+    
+      
+        <li><a href="/tag/aws">aws</a></li>
+    
+      
+        <li><a href="/tag/bitbucket">bitbucket</a></li>
+    
+      
+        <li><a href="/tag/blog">blog</a></li>
+    
+      
+        <li><a href="/tag/career">career</a></li>
+    
+      
+        <li><a href="/tag/cloudwatch">cloudwatch</a></li>
+    
+      
+        <li><a href="/tag/debug">debug</a></li>
+    
+      
+        <li><a href="/tag/dns">dns</a></li>
+    
+      
+        <li><a href="/tag/domain">domain</a></li>
+    
+      
+        <li><a href="/tag/elastic-beanstalk">elastic-beanstalk</a></li>
+    
+      
+        <li>...</li>
+        <li><a href="/tags">Show all</a></li>
+        
+  </ul>
+
+
+        <article class="article ">
+          <header class="article-header">
+            <h1>Testing Ansible Roles on Windows Hosts Using Test-Kitchen and AWS</h1>
+            <p>Writing Ansible roles for Windows? here's a suggested architecture for integration tests</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    December 7, 2018
+  </span>
+  <span class="article-list-divider">-</span>
+  <span class="article-list-minutes">
+    
+    
+      4 minute read
+    
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      <a href="/tag/ansible" title="See all posts with tag 'ansible'" data-proofer-ignore>ansible</a>
+    
+      <a href="/tag/roles" title="See all posts with tag 'roles'" data-proofer-ignore>roles</a>
+    
+      <a href="/tag/windows" title="See all posts with tag 'windows'" data-proofer-ignore>windows</a>
+    
+      <a href="/tag/aws" title="See all posts with tag 'aws'" data-proofer-ignore>aws</a>
+    
+      <a href="/tag/testing" title="See all posts with tag 'testing'" data-proofer-ignore>testing</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/ansible-2cbc4cc6304f0acc3b83bd86ebacf5136f6d8e6b8df71371b8967d012acb8a7f.png">
+  <img src="/assets/ansible-2cbc4cc6304f0acc3b83bd86ebacf5136f6d8e6b8df71371b8967d012acb8a7f.png" alt="Ansible" class="zooming" data-rjs="/assets/ansible-2cbc4cc6304f0acc3b83bd86ebacf5136f6d8e6b8df71371b8967d012acb8a7f.png" data-zooming-width="359" data-zooming-height="284" />
+</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Working a-lot with Ansible lately, I was encountering in a real blocking problem. As we were working on deploying our software on Windows targets, We were constantly trying to find ways to test our roles, but we encountered some issues, mostly related to our development environments. Writing these lines, i’m using my personal Macbook Air so don’t be confused because of that.</p>
+
+<p>The fact we were working on a Cyber Security company requires compromises on development environments. Always working in a virtual environment has it’s limitations, and therefore it was not possible to use a solution that deploys VirtualBox VM’s, Docker or LXC containers, and manage all of these using Vagrant, for example. Therefore, I was looking for a way to provision machine using the existing resources on our team. I discovered that Test-Kitchen could help me doing that using it’s EC2 driver.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<h3 id="test-kitchen">Test-Kitchen</h3>
+
+<p>Rule of thumb: Ansible roles are great, please use Ansible roles. I’m not going to elaborate on this furthermore, but just use roles whether it’s possible. Test-Kitchen is pretty easy to setup, and consists few steps:</p>
+
+<ol>
+  <li>Download ChefDK from the Chef download website, according to your platform (I assume that you’re using Linux or macOS as your development machine).</li>
+  <li>Install the chef gems for test-kitchen and it’s Ansible plugin. You can find further instructions on the Git repository in the end of this article.</li>
+  <li>Make sure you have Python installed. I personally recommend python 2.7.15, as we’re mostly using it for our projects. Whether your development machine is a VDI, virtual machine or even Cloud9 instance (where you get this out of the box).</li>
+  <li>Make sure you have AWS CLI installed and configured (using aws configure) with proper credentials to create and describe EC2 instances, security groups and keypairs. Try to use a sufficient and permissive user (but not on any production account, of course!).</li>
+</ol>
+
+<h3 id="the-kitchenyml-file">The .kitchen.yml File</h3>
+
+<p>Once we finished setting up our development environment, we want to describe how exactly we are going to provision the testing environment for our role and how to test it. This is why the .kitchen.yml file exists, Let’s take a look:</p>
+
+<script src="https://gist.github.com/avishayil/1640a0a528a01b49cbd356324afd2187.js"></script>
+
+<p>This YAML file is pretty-much self explanatory, but let’s focus on a few important things:</p>
+
+<ol>
+  <li>On the <code class="highlighter-rouge">windows-2016</code> platform, we can see the the <code class="highlighter-rouge">verifier</code> is <code class="highlighter-rouge">pester</code>. We get that ability out of the box with our setup, so we can use Pester tests to describe tests inside our Windows targets using PowerShell.</li>
+  <li>The <code class="highlighter-rouge">inventory/hosts</code> file does not exist yet, your’e absolutely right. That’s because we still haven’t run the script that would create that file dynamically, querying our AWS account.</li>
+  <li>The <code class="highlighter-rouge">provisioner</code> section of the code defines what will happen when we’ll run <code class="highlighter-rouge">kitchen converge</code>. In this case, we need that the <code class="highlighter-rouge">ansible-playbook</code> process will play our <code class="highlighter-rouge">default.yml</code> playbook on our dynamically-created inventory.</li>
+  <li>If you are working on a development machine, you’re more than welcome to copy this file and overwrite it using a <code class="highlighter-rouge">.kitchen.local.yml</code> file on the same directory. It will use the <code class="highlighter-rouge">.kitchen.yml</code> file as a base and will add differences on the local file, but remember — <code class="highlighter-rouge">.kitchen.local.yml</code> file is gitignored. Therefore, any change you’d like to contribute to the ci-cd process should be on <code class="highlighter-rouge">.kitchen.yml</code> file.</li>
+  <li>The <code class="highlighter-rouge">driver-config</code> section of the EC2 driver has a ton of options, such as using an IAM profile to give the created machine the necessary permissions to perform actions against the AWS ecosystem. You can see all the configuration options <a href="https://github.com/test-kitchen/kitchen-ec2">here</a>.</li>
+</ol>
+
+<h3 id="time-to-get-dirty">Time to Get Dirty</h3>
+
+<p>Now, it’s time to clone our example repository and see how it works. On the example project, the following steps will allow us to create, test and destroy our testing environment as many times as we want. The Ansible role itself, defined on the repository is bloody simple: it will download and silently install Google Chrome on our Windows target.</p>
+
+<p>The following steps will be included in the flow, that can be easily automated to be comply with CI-CD environments:</p>
+
+<ol>
+  <li><code class="highlighter-rouge">kitchen create</code> — will create our environment on AWS. It will look for our default region, then launch the EC2 instances on the default VPC inside the default subnet (should be public). The demo environment contains an Ansible machine and Windows 2016 Server target host, both configured with user_data to make sure that they have the software needed to perform the necessary operations (Ansible with Windows hosts support on RHEL, WinRM allowed on the firewall and password changed to <code class="highlighter-rouge">Kitchen</code> on the Windows host).</li>
+  <li>Run the script <code class="highlighter-rouge">inventory/generate_inventory.sh</code> — It will dynamically create hosts file that would contain all the EC2 instances on our AWS account. We’re using tagging technique here — our Windows target launched with the tag <code class="highlighter-rouge">kitchen-type: windows</code>, what makes us easy to identify it using the dynamic inventory, and run the role on the right hosts using the default playbook.</li>
+  <li><code class="highlighter-rouge">kitchen converge</code> — will transfer the role to our newly created Ansible machine, install Chef on the windows target and then Run the default playbook, defined on the <code class="highlighter-rouge">.kitchen.yml</code> file on the Windows host.</li>
+  <li><code class="highlighter-rouge">kitchen verify</code> — will push the test files, located on <code class="highlighter-rouge">tests/integration</code> folder to the target machine, then run them. On this role, we’re using Pester to test our Windows target with PowerShell. The output will be how many tests run and passed, what will allow us to decide if the role succeeded or not.</li>
+  <li><code class="highlighter-rouge">kitchen destroy</code> — will terminate all our instances, keypairs and security groups and leave our AWS environment clean and ready for the next <code class="highlighter-rouge">kitchen create.</code></li>
+</ol>
+
+<p><a href="/assets/kitchen-test-900aaf9a7692ac6a486b9cbbcbaecc637528e872401cabab88e951d11a851260.png">
+  <img src="/assets/kitchen-test-900aaf9a7692ac6a486b9cbbcbaecc637528e872401cabab88e951d11a851260.png" alt="Kitchen Test" class="zooming" data-rjs="/assets/kitchen-test-900aaf9a7692ac6a486b9cbbcbaecc637528e872401cabab88e951d11a851260.png" data-zooming-width="682" data-zooming-height="564" />
+</a></p>
+
+<p>I hope this solution will assist you testing your Windows Ansible roles.</p>
+
+<p>Avishay.</p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Testing+Ansible+Roles+on+Windows+Hosts+Using+Test-Kitchen+and+AWS%20-%20https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws%20by%20@avishayil" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script src="https://avishayil-blog.disqus.com/embed.js" async defer></script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+          
+        </article>
+        <footer class="footer ">
+  <p>
+    Cloud Blurbs. © All rights reserved to <a href="/about" title="About me">Avishay Bar</a> |  
+    Built with <a href="http://chalk.nielsenramon.com" title="Chalk">Chalk</a>, a <a href="https://jekyllrb.com" title="Jekyll">Jekyll</a> blog template.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63733853-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-63733853-3');
+  </script>
+
+
+<script src="/assets/vendor-130c9c254effc51f3283620bc635851da7b99c20901216948f11ba72ee13317f.js" type="text/javascript"></script>
+
+
+
+
+
+<script src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js" type="text/javascript"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Cloud Blurbs | Setup Your Private Domain Name System in AWS</title>
+  <meta name="description" content="A handful guide on setting your own DNS system using AWS Route53">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Setup Your Private Domain Name System in AWS">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cloudblurbs.com/posts/setup-private-dns-in-route53">
+  <meta property="og:description" content="A handful guide on setting your own DNS system using AWS Route53">
+  <meta property="og:site_name" content="Cloud Blurbs">
+  
+  <link rel="canonical" href="https://medium.com/@avishayil/setup-your-private-domain-name-system-in-aws-6b6eda68ccc0"/>
+  
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://cloudblurbs.com/posts/setup-private-dns-in-route53">
+  <meta name="twitter:title" content="Setup Your Private Domain Name System in AWS">
+  <meta name="twitter:description" content="A handful guide on setting your own DNS system using AWS Route53">
+
+  
+    
+      <meta property="og:image" content="https://cloudblurbs.com/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png">
+      <meta name="twitter:image" content="https://cloudblurbs.com/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png">
+    
+  
+
+  <link href="https://cloudblurbs.com/feed.xml" type="application/rss+xml" rel="alternate" title="Cloud Blurbs Last 10 blog posts" />
+
+  
+    <link rel="stylesheet" type="text/css" href="/assets/fonts-85dab368d056b5d66418fbfd7e55a89f34f644ee811c8218c81017204426121b.css">
+  
+
+  
+
+    
+      <link rel="icon" type="image/x-icon" href="/assets/favicon-light-a98c41efc5ed9fcc06ac664c9e2f7a9b3c3b2e0a52357d221fe382f6f4abc8fc.ico">
+      <link rel="apple-touch-icon" href="/assets/apple-touch-icon-light-87d1f2a3a19b1500e5c1626a0492025ca5f7f97d24540dc5900288e92112925a.png">
+      <link rel="stylesheet" type="text/css" href="/assets/light-082f8487859893265bdc3e1ea26da14818d7437bc53e2408f70124a48b5ba7dc.css">
+    
+
+  
+
+</head>
+
+<body>
+  <main>
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav ">
+  <a href="/" class="header-logo" title="Cloud Blurbs">Cloud Blurbs</a>
+  <ul class="header-links">
+    
+      <li>
+        <a href="/about" title="About me">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-about">
+  <use href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about" xlink:href="/assets/about-ecf154b571ab8034ae00aeed91a3b7ad68db80b46d958753ad6216c919486e88.svg#icon-about"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://twitter.com/avishayil" rel="noreferrer noopener" target="_blank" title="Twitter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-twitter">
+  <use href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter" xlink:href="/assets/twitter-8842c33965263ad1b03a978406826677a668f94125d5837e70ab83f24b3213a7.svg#icon-twitter"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://www.facebook.com/avishayil" rel="noreferrer noopener" target="_blank" title="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-facebook">
+  <use href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook" xlink:href="/assets/facebook-72c99b26d37bee65607720abb23d26b44ef30cca1187f98b0d9305be1230b1bf.svg#icon-facebook"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://medium.com/@avishayil" rel="noreferrer noopener" target="_blank" title="Medium">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-medium">
+  <use href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium" xlink:href="/assets/medium-c490b76e2e7329f77cc2df18acc17452868ea861ed0e1ecf621c9777877068f5.svg#icon-medium"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="https://github.com/avishayil" rel="noreferrer noopener" target="_blank" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-github">
+  <use href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github" xlink:href="/assets/github-094f81040819f34343ee6ffff0980f17e2807b08b595eaaf66ae3554934fd78d.svg#icon-github"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/avishaybar" rel="noreferrer noopener" target="_blank" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-linkedin">
+  <use href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin" xlink:href="/assets/linkedin-cdc5c107044324a3dfbea2e9ead15873f8dee304c37d73a046988956b706256e.svg#icon-linkedin"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      <li>
+        <a href="mailto:avishay.il@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-email">
+  <use href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email" xlink:href="/assets/email-782473193bf750036fdb90e8daa075508a20509d01854c09f3237c144a3f0601.svg#icon-email"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+      <li>
+        <a href="/feed.xml" rel="noreferrer noopener" target="_blank" title="RSS">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-rss">
+  <use href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss" xlink:href="/assets/rss-541ec5cea9cefd10d2fcfec01888f3f231a8829940249835fa7b7b3a12ae0d0d.svg#icon-rss"></use>
+</svg>
+
+        </a>
+      </li>
+    
+    
+  </ul>
+</nav>
+
+
+  <ul class="header-tags ">
+    
+    
+      
+        <li><a href="/tag/ansible">ansible</a></li>
+    
+      
+        <li><a href="/tag/aws">aws</a></li>
+    
+      
+        <li><a href="/tag/bitbucket">bitbucket</a></li>
+    
+      
+        <li><a href="/tag/blog">blog</a></li>
+    
+      
+        <li><a href="/tag/career">career</a></li>
+    
+      
+        <li><a href="/tag/cloudwatch">cloudwatch</a></li>
+    
+      
+        <li><a href="/tag/debug">debug</a></li>
+    
+      
+        <li><a href="/tag/dns">dns</a></li>
+    
+      
+        <li><a href="/tag/domain">domain</a></li>
+    
+      
+        <li><a href="/tag/elastic-beanstalk">elastic-beanstalk</a></li>
+    
+      
+        <li>...</li>
+        <li><a href="/tags">Show all</a></li>
+        
+  </ul>
+
+
+        <article class="article ">
+          <header class="article-header">
+            <h1>Setup Your Private Domain Name System in AWS</h1>
+            <p>A handful guide on setting your own DNS system using AWS Route53</p>
+            <div class="article-list-footer">
+  <span class="article-list-date">
+    March 27, 2018
+  </span>
+  <span class="article-list-divider">-</span>
+  <span class="article-list-minutes">
+    
+    
+      4 minute read
+    
+  </span>
+  <span class="article-list-divider">-</span>
+  <div class="article-list-tags">
+    
+      <a href="/tag/route53" title="See all posts with tag 'route53'" data-proofer-ignore>route53</a>
+    
+      <a href="/tag/aws" title="See all posts with tag 'aws'" data-proofer-ignore>aws</a>
+    
+      <a href="/tag/dns" title="See all posts with tag 'dns'" data-proofer-ignore>dns</a>
+    
+      <a href="/tag/domain" title="See all posts with tag 'domain'" data-proofer-ignore>domain</a>
+    
+  </div>
+</div>
+          </header>
+
+          <div class="article-content">
+            <p><a href="/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png">
+  <img src="/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png" alt="Route53" class="zooming" data-rjs="/assets/route53-6f79bba5680a6e212d5b799cd19027c191ae828ced2f4af2781edff15ecc8b79.png" data-zooming-width="1078" data-zooming-height="503" />
+</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>During my work, I encountered several times in a need of architecting &amp; developing internal systems, which requires access from specific people inside the company. In terms of visibility &amp; security, you probably don’t want these systems to be available to the internet, and therefore you must find a solution.</p>
+
+<p>On AWS, you have the option to create private subnets inside your VPC and access the application through VPN. That seems like a nice solution, right? but when you want to publish the application internally, you probably don’t want to deliver it with an internal IP address such as <code class="highlighter-rouge">10.0.0.79</code>.</p>
+
+<p>In the solution offered in this post, we’ll learn how to use <strong>AWS Route53 Private Hosted Zones</strong>, alongside with Amazon Active Directory Services in order to achieve a solution that will make the domain <code class="highlighter-rouge">ec2.localhost</code> visible to the people residing inside your VPC, with the help of the VPN connection.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<p>Make sure you’re in a region with supports Directory Service Simple AD, We’ll be creating our infrastructure in Ireland for this guide purposes. For a full list of regions supporting Simple AD, visit the [3] reference and search for Simple AD.</p>
+
+<h3 id="vpc">VPC</h3>
+
+<ul>
+  <li>
+    <p>Create VPC and allocate an IP CIDR (10.0.0.0/16). I found this tool useful to translate IP CIDR to IP range: https://www.ipaddressguide.com/cidr</p>
+  </li>
+  <li>Create two subnets on two different availability zones. If you’ll accidentally create the two subnets on the same availability zone, you’ll have to recreate one of them, which concludes removing all instances on the unneeded availability zone. For example:
+    <ul>
+      <li>First Subnet CIDR — <code class="highlighter-rouge">10.0.0.0/24</code></li>
+      <li>Second subnet CIDR — <code class="highlighter-rouge">10.0.1.0/24</code></li>
+    </ul>
+  </li>
+  <li>
+    <p>Create a route table and make sure you’re associating at least the first subnet to it, so the instances that we’ll want to access will be available for local access (Communication between instances) and internet access (Software Updates, VPN).</p>
+  </li>
+  <li>
+    <p>Create an Internet Gateway and associate it to your VPC. Update the route table you created earlier with association to the IGW you just created. You want to IGW to access the whole internet, so your VPN server will be able to operate normally with computer anywhere in the world. For that reason, you’d probably want to specify <code class="highlighter-rouge">0.0.0.0/0</code> as you’re destination CIDR.</p>
+  </li>
+  <li>Create a Virtual Private Gateway (VGW) and associate it with your VPC.
+Update you’re route table the VGW will be able to access all the instances inside the VPC — CIDR <code class="highlighter-rouge">10.0.0.0/8</code>.</li>
+</ul>
+
+<h3 id="ec2">EC2</h3>
+
+<ul>
+  <li>Create an EC2 instance and associate it with the VPC you created earlier. Make sure that the security group you’re associating to the EC2 instance allows access only to CIDR inside the VPC. For testing purposes, allow access on port 22 to the CIDR: <code class="highlighter-rouge">10.0.0.0/8</code> which will allow access form any address range of <code class="highlighter-rouge">10.0.0.0–10.255.255.255</code>.</li>
+</ul>
+
+<h3 id="route53">Route53</h3>
+
+<ul>
+  <li>
+    <p>Go to Route 53 and create new private hosted zone. Associate the hosted zone with your VPC. Name the hosted zone as the domain name you’d like to privately access (For example, ec2.localhost). you can choose any name you want since you’re going to resolve this domain name from your own DNS server you’re going to create in a few minutes.</p>
+  </li>
+  <li>
+    <p>Create a new A record on your newly created private hosted zone. Name it whatever you want (You can keep the name empty for resolving ec2.localhost). Point the A record to the IP address of the ec2 instance you created earlier.</p>
+  </li>
+</ul>
+
+<h3 id="directory-service">Directory Service</h3>
+
+<ul>
+  <li>
+    <p>Go to Amazon Directory Service. Create a new Simple AD (With whatever name you’ll choose) and associate it with your VPC, on both subnets you created earlier.</p>
+  </li>
+  <li>
+    <p>Take a note of the DNS addresses you got from the Simple AD. You’ll need to specify them on your local network adapter so you’ll have access to the private hosted zone on Route 53 that you created earlier.</p>
+  </li>
+</ul>
+
+<h3 id="vpn-and-dns-routing">VPN and DNS routing</h3>
+
+<ul>
+  <li>
+    <p>Create another EC2 instance — this is going to be the VPN server you’re going to connect every time you’ll want to access resources inside your VPC. Hackernoon provided <a href="https://hackernoon.com/using-a-vpn-server-to-connect-to-your-aws-vpc-for-just-the-cost-of-an-ec2-nano-instance-3c81269c71c2">a wonderful guide</a> details how to create this kind of server quickly, please follow the steps provided on the blog posts and continue to the next section.</p>
+  </li>
+  <li>
+    <p>Configure your OpenVPN server — using the configuration file /etc/openvpn/server.conf, configure the server to push route to your VPC, uncommenting the following line: <code class="highlighter-rouge">push "route 10.0.0.0 255.255.255.0"</code>. Next, you’ll need to configure the server to point the requests to your newly created DNS server from Simple AD you configured in the Directory Service step. Uncomment and edit the following line: <code class="highlighter-rouge">push "redirect-gateway def1"</code>. Then, define the addresses: <code class="highlighter-rouge">push "dhcp-option DNS 10.0.x.x"</code> twice, using the DNS addresses you noted.</p>
+  </li>
+</ul>
+
+<h3 id="references">References</h3>
+<ul>
+  <li><a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zone-private-creating.html">Creating a private hosted zone on Amazon Route 53</a></li>
+  <li><a href="https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_directory.html">Create Simple AD on Amazon Directory Service</a></li>
+  <li><a href="https://docs.aws.amazon.com/general/latest/gr/rande.html#ds_region">Directory Service Regions</a></li>
+</ul>
+
+<p>Avishay.</p>
+
+          </div>
+          <div class="article-share">
+            
+            
+            <a href="https://twitter.com/home?status=Setup+Your+Private+Domain+Name+System+in+AWS%20-%20https://cloudblurbs.com/posts/setup-private-dns-in-route53%20by%20@avishayil" title="Share on Twitter" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M492 109.5c-17.4 7.7-36 12.9-55.6 15.3 20-12 35.4-31 42.6-53.6 -18.7 11.1-39.4 19.2-61.5 23.5C399.8 75.8 374.6 64 346.8 64c-53.5 0-96.8 43.4-96.8 96.9 0 7.6 0.8 15 2.5 22.1 -80.5-4-151.9-42.6-199.6-101.3 -8.3 14.3-13.1 31-13.1 48.7 0 33.6 17.2 63.3 43.2 80.7C67 210.7 52 206.3 39 199c0 0.4 0 0.8 0 1.2 0 47 33.4 86.1 77.7 95 -8.1 2.2-16.7 3.4-25.5 3.4 -6.2 0-12.3-0.6-18.2-1.8 12.3 38.5 48.1 66.5 90.5 67.3 -33.1 26-74.9 41.5-120.3 41.5 -7.8 0-15.5-0.5-23.1-1.4C62.8 432 113.7 448 168.3 448 346.6 448 444 300.3 444 172.2c0-4.2-0.1-8.4-0.3-12.5C462.6 146 479 129 492 109.5z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://cloudblurbs.com/posts/setup-private-dns-in-route53" title="Share on Facebook" rel="noreferrer noopener" target="_blank">
+              <svg viewBox="0 0 512 512"><path d="M288 192v-38.1c0-17.2 3.8-25.9 30.5-25.9H352V64h-55.9c-68.5 0-91.1 31.4-91.1 85.3V192h-45v64h45v192h83V256h56.4l7.6-64H288z"/></svg>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script src="https://avishayil-blog.disqus.com/embed.js" async defer></script>
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+          
+        </article>
+        <footer class="footer ">
+  <p>
+    Cloud Blurbs. © All rights reserved to <a href="/about" title="About me">Avishay Bar</a> |  
+    Built with <a href="http://chalk.nielsenramon.com" title="Chalk">Chalk</a>, a <a href="https://jekyllrb.com" title="Jekyll">Jekyll</a> blog template.
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-63733853-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-63733853-3');
+  </script>
+
+
+<script src="/assets/vendor-130c9c254effc51f3283620bc635851da7b99c20901216948f11ba72ee13317f.js" type="text/javascript"></script>
+
+
+
+
+
+<script src="/assets/application-cfde13ac81ddaf4351b2e739603e2baf688d0fcc9aba613fe62bbb1c7b037fb9.js" type="text/javascript"></script>
+
+
+</body>
+</html>

@@ -1,20 +1,74 @@
----
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="https://www.w3.org/2005/Atom" xmlns:dc="https://purl.org/dc/elements/1.1/">
   <channel>
-    <title>{{ site.name | xml_escape }}</title>
-    <description>{% if site.description %}{{ site.description | xml_escape }}{% endif %}</description>
-    <link>{{ site.url }}</link>
-    <atom:link href="{{ page.path | absolute_url }}" rel="self" type="application/rss+xml" />
-    {% for post in site.posts limit:10 %}
+    <title>Cloud Blurbs</title>
+    <description>Avishay Bar personal corner on the web. Blurbs about technology, cloud and security.</description>
+    <link>https://cloudblurbs.com</link>
+    <atom:link href="https://cloudblurbs.com/feed.xml" rel="self" type="application/rss+xml" />
+    
       <item>
-        <title>{{ post.title | xml_escape }}</title>
-        <description>{{ post.description | xml_escape }}</description>
-        <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-        <link>{{ post.url | absolute_url }}</link>
-        <guid isPermaLink="true">{{ post.url | absolute_url }}</guid>
+        <title>Why Hosting your Blog on GitHub Pages is Great for your Career</title>
+        <description>Why Hosting your Blog on GitHub Pages is Great for your Career</description>
+        <pubDate>Sun, 15 Nov 2020 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/why-hosting-your-blog-on-github-is-great-for-your-career</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/why-hosting-your-blog-on-github-is-great-for-your-career</guid>
       </item>
-    {% endfor %}
+    
+      <item>
+        <title>Pro Tip: Allow Access to AWS Programmatic Accounts from Specific IP Addresses</title>
+        <description>Programmatic accounts are a bad idea in general, but at least AWS provides us a way to secure the access to them</description>
+        <pubDate>Sat, 21 Sep 2019 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/allow-aws-programmatic-accounts-from-specific-ip-addresses</guid>
+      </item>
+    
+      <item>
+        <title>Testing Ansible Roles on Windows Hosts Using Test-Kitchen and AWS</title>
+        <description>Writing Ansible roles for Windows? here's a suggested architecture for integration tests</description>
+        <pubDate>Fri, 07 Dec 2018 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/testing-ansible-roles-on-windows-hosts-using-test-kitchen-and-aws</guid>
+      </item>
+    
+      <item>
+        <title>Dynamic DNS Using AWS Route 53</title>
+        <description>With this solution, your home workloads doesn't require purchasing a static IP from your ISP</description>
+        <pubDate>Sun, 14 Oct 2018 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/dynamic-dns-using-aws-route53</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/dynamic-dns-using-aws-route53</guid>
+      </item>
+    
+      <item>
+        <title>Setup Your Private Domain Name System in AWS</title>
+        <description>A handful guide on setting your own DNS system using AWS Route53</description>
+        <pubDate>Tue, 27 Mar 2018 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/setup-private-dns-in-route53</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/setup-private-dns-in-route53</guid>
+      </item>
+    
+      <item>
+        <title>Deploy Elastic Beanstalk Application using Bitbucket Pipelines</title>
+        <description>You have an Elastic Beanstalk applications and your'e using bitbucket for source control? here's your way to automate your deployment pipeline</description>
+        <pubDate>Wed, 17 Jan 2018 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/elastic-beanstalk-bitbucket-pipelines</guid>
+      </item>
+    
+      <item>
+        <title>Using AWS Lambda To Auto Recover Unresponsive Multi-AZ RDS Cluster</title>
+        <description>Investigating RDS cluster inresponsivness can lead to a long downtime. Here is an automation that allows your site to stay up.</description>
+        <pubDate>Wed, 13 Dec 2017 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/lambda-recover-rds-cluster</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/lambda-recover-rds-cluster</guid>
+      </item>
+    
+      <item>
+        <title>Release The Pain from Running and Debugging React Native App on a real iOS Device</title>
+        <description>React Native debugging on a real iOS device could be a pain. Here is a simple trick to make your life a little bit easier</description>
+        <pubDate>Mon, 06 Feb 2017 00:00:00 +0000</pubDate>
+        <link>https://cloudblurbs.com/posts/react-native-debug-ios</link>
+        <guid isPermaLink="true">https://cloudblurbs.com/posts/react-native-debug-ios</guid>
+      </item>
+    
   </channel>
 </rss>
